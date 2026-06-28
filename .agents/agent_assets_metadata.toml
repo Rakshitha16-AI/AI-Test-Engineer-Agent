@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "wms2IBKRDBJHbvwGj8mch"
+uri = "file://downloads/rakshitha-ai-test-engineer-COMPILED.tar.gz"
+type = "unspecified"
+title = "Compiled HTML/CSS/JS (Ready to Host)"
+
+[[outputs]]
+id = "gdBSIxjxSETSmMRH9d_3z"
+uri = "file://downloads/rakshitha-ai-test-engineer-SOURCE.tar.gz"
+type = "unspecified"
+title = "Full Source Code (React + Vite)"
