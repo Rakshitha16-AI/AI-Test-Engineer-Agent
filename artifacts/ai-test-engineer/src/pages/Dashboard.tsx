@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import AIOutputPanel from "@/components/AIOutputPanel";
+import DuplicateDetector from "@/components/DuplicateDetector";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -108,6 +109,11 @@ export default function Dashboard() {
   };
 
   const triggerAction = (actionId: string) => {
+    // Duplicate detector has its own file upload — no requirement doc needed
+    if (actionId === "duplicates") {
+      setCurrentAction("duplicates");
+      return;
+    }
     if (!file) {
       setCurrentAction("no_file");
       toast.error("No document uploaded", {
@@ -213,19 +219,25 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* AI Output Panel */}
+      {/* Output Area — Duplicate Detector OR AI Output Panel */}
       <div className="flex-1 min-h-[380px] flex flex-col relative">
-        {!file && !currentAction && (
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-            <Zap className="w-3 h-3 text-yellow-400" />
-            <span className="text-xs text-yellow-400 font-medium">Upload a document to begin</span>
-          </div>
+        {currentAction === "duplicates" ? (
+          <DuplicateDetector />
+        ) : (
+          <>
+            {!file && !currentAction && (
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+                <Zap className="w-3 h-3 text-yellow-400" />
+                <span className="text-xs text-yellow-400 font-medium">Upload a document to begin</span>
+              </div>
+            )}
+            <AIOutputPanel
+              action={currentAction}
+              fileName={file?.name ?? "document.pdf"}
+              onClear={() => setCurrentAction(null)}
+            />
+          </>
         )}
-        <AIOutputPanel
-          action={currentAction}
-          fileName={file?.name ?? "document.pdf"}
-          onClear={() => setCurrentAction(null)}
-        />
       </div>
     </div>
   );
