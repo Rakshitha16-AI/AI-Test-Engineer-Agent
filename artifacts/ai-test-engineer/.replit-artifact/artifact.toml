@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "AI Test Engineer Agent"
+version = "1.0.0"
+id = "artifacts/ai-test-engineer"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19450
+
+[services.development]
+run = "pnpm --filter @workspace/ai-test-engineer run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-test-engineer", "run", "build" ]
+publicDir = "artifacts/ai-test-engineer/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19450"
+BASE_PATH = "/"
