@@ -64,7 +64,7 @@ export default function Sidebar() {
             QA
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-white">Lead Engineer</span>
+            <span className="text-sm font-medium text-white">Testing Engineer</span>
             <span className="text-xs text-white/50">Pro Tier</span>
           </div>
         </div>
