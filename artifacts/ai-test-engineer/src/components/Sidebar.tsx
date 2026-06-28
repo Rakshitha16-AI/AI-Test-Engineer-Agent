@@ -29,7 +29,10 @@ export default function Sidebar() {
         <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center mr-3 border border-primary/30">
           <Brain className="w-4 h-4 text-primary" />
         </div>
-        <span className="font-semibold text-white tracking-tight">AI Test Agent</span>
+        <div className="flex flex-col">
+          <span className="font-semibold text-white tracking-tight">AI Test Agent</span>
+          <span className="text-xs text-white/40">Rakshitha</span>
+        </div>
       </div>
       
       <div className="flex-1 py-6 px-3 flex flex-col gap-1 overflow-y-auto">
