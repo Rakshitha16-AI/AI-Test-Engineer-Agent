@@ -5,7 +5,12 @@ import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
-import Placeholder from "@/pages/Placeholder";
+import RequirementAnalysis from "@/pages/RequirementAnalysis";
+import TestCaseGenerator from "@/pages/TestCaseGenerator";
+import TestDataGenerator from "@/pages/TestDataGenerator";
+import DefectPrediction from "@/pages/DefectPrediction";
+import DuplicateDetectionPage from "@/pages/DuplicateDetectionPage";
+import TestReport from "@/pages/TestReport";
 
 const queryClient = new QueryClient();
 
@@ -14,12 +19,12 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
-        <Route path="/analysis" component={Placeholder} />
-        <Route path="/test-cases" component={Placeholder} />
-        <Route path="/test-data" component={Placeholder} />
-        <Route path="/prediction" component={Placeholder} />
-        <Route path="/duplicates" component={Placeholder} />
-        <Route path="/report" component={Placeholder} />
+        <Route path="/analysis" component={RequirementAnalysis} />
+        <Route path="/test-cases" component={TestCaseGenerator} />
+        <Route path="/test-data" component={TestDataGenerator} />
+        <Route path="/prediction" component={DefectPrediction} />
+        <Route path="/duplicates" component={DuplicateDetectionPage} />
+        <Route path="/report" component={TestReport} />
         <Route component={Dashboard} />
       </Switch>
     </Layout>
