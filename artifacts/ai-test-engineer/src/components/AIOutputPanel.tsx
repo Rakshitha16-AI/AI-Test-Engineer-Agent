@@ -110,7 +110,7 @@ export default function AIOutputPanel({
           </div>
           <div className="flex items-center gap-2">
             <Cpu className="w-3.5 h-3.5 text-[#00d4aa]" />
-            <span className="text-xs font-mono text-white/60">gemini-1.5-flash</span>
+            <span className="text-xs font-mono text-white/60">gemini-2.5-flash</span>
             <span className="text-white/20">·</span>
             <span className="text-xs font-semibold text-white/80">{title}</span>
           </div>
