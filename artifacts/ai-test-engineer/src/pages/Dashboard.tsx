@@ -6,6 +6,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useDocument } from "@/context/DocumentContext";
+import { extractFileText } from "@/services/extractService";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -72,14 +73,18 @@ export default function Dashboard() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (f: File) => {
+    const tid = toast.loading(`Extracting text from ${f.name}…`);
     try {
-      const text = await f.text();
+      const text = await extractFileText(f);
+      toast.dismiss(tid);
       setDocument(f.name, text);
       toast.success("Document uploaded", {
         description: `${f.name} is ready for analysis on all pages.`,
       });
-    } catch {
-      toast.error("Failed to read file. Try a .txt file or paste text in Requirement Analysis.");
+    } catch (err) {
+      toast.dismiss(tid);
+      const msg = err instanceof Error ? err.message : "Failed to read file";
+      toast.error("Upload failed", { description: msg });
     }
   };
 

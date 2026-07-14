@@ -6,6 +6,7 @@ import {
 import AIOutputPanel from "@/components/AIOutputPanel";
 import { useDocument } from "@/context/DocumentContext";
 import { aiService } from "@/services/aiService";
+import { extractFileText } from "@/services/extractService";
 import type { AnalysisResult, Risk } from "@/types/aiResponses";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -173,13 +174,17 @@ export default function RequirementAnalysis() {
   }, [fileContent]);
 
   const handleFile = async (f: File) => {
+    const tid = toast.loading(`Extracting text from ${f.name}…`);
     try {
-      const text = await f.text();
+      const text = await extractFileText(f);
+      toast.dismiss(tid);
       setDocument(f.name, text);
       setResult(null);
       toast.success(`${f.name} uploaded and ready`);
-    } catch {
-      toast.error("Failed to read file. Try a .txt file.");
+    } catch (err) {
+      toast.dismiss(tid);
+      const msg = err instanceof Error ? err.message : "Failed to read file";
+      toast.error("Upload failed", { description: msg });
     }
   };
 
