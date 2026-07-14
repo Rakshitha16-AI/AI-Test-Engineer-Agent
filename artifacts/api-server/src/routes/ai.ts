@@ -12,7 +12,7 @@ function getModel() {
   }
   const genAI = new GoogleGenerativeAI(apiKey);
   return genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-3-flash-preview",
     generationConfig: {
       responseMimeType: "application/json",
       maxOutputTokens: 8192,
