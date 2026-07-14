@@ -1,0 +1,139 @@
+Upgrade the AI Test Engineer Agent from a simulated prototype to a working AI-assisted application using the Google Gemini API.
+
+Requirements:
+
+1. Gemini Integration
+- Integrate Google Gemini API.
+- Store the API key securely using environment variables.
+- Do not hardcode the API key.
+- Create a reusable Gemini service that all modules use.
+
+2. Document Upload
+- Support TXT, PDF, and DOCX files.
+- Read and extract the full text from the uploaded document.
+- Store the extracted text in a global state so every page can access the same requirement.
+- If the user uploads a different requirement document, replace the previous document completely.
+- All generated outputs must always be based on the currently uploaded requirement.
+
+3. Requirement Analysis
+After clicking "Analyze Requirement":
+Generate:
+- Requirement Summary
+- Actors
+- Functional Requirements
+- Non-functional Requirements
+- Business Rules
+- Assumptions
+- Risks
+Return structured tables and sections.
+
+4. Test Case Generator
+Generate dynamic test cases from the uploaded requirement.
+Include:
+- Test Case ID
+- Scenario
+- Preconditions
+- Test Steps
+- Expected Result
+- Priority
+- Positive
+- Negative
+- Boundary Value
+- Edge Cases
+
+5. Test Data Generator
+Generate:
+- Positive test data
+- Negative test data
+- Boundary values
+- Invalid values
+- Sample datasets
+
+6. Defect Prediction
+Analyze the uploaded requirement and predict:
+- High-risk modules
+- Possible defects
+- Risk score
+- Severity
+- Probability
+- Recommendations
+
+7. Duplicate Detection
+Use the uploaded requirement and entered defect title to identify possible duplicate defects.
+Provide:
+- Similarity percentage
+- Reason
+- Recommendation
+
+8. Test Report
+Generate a report using all previous AI-generated results.
+Include:
+- Requirement Summary
+- Number of Test Cases
+- Risks
+- Coverage
+- Recommendations
+- Overall Project Health
+
+9. Shared State
+Every module must use the same uploaded requirement document.
+Example:
+Upload Requirement A
+→ Requirement Analysis
+→ Test Cases
+→ Test Data
+→ Defect Prediction
+→ Report
+
+All outputs must reference Requirement A.
+
+If the user uploads Requirement B,
+every page must automatically regenerate outputs based on Requirement B.
+No previous data should remain.
+
+10. Navigation
+Fix all left navigation tabs.
+Each page must:
+- Open correctly
+- Preserve uploaded requirement
+- Preserve generated results
+- Not lose state while navigating
+
+11. UI Fixes
+Fix the overlapping "Upload a document to begin" text.
+Improve spacing and responsiveness.
+Ensure proper alignment on desktop and laptop screens.
+
+12. Error Handling
+If no document is uploaded:
+Show:
+"Please upload a requirement document first."
+
+If Gemini returns an error:
+Display a user-friendly error message.
+
+13. Loading
+Show a loading spinner while Gemini is generating results.
+
+14. Code Quality
+Create reusable services.
+Avoid duplicate code.
+Use async/await.
+Handle exceptions properly.
+
+Acceptance Criteria
+
+✓ Upload Requirement 1
+✓ All modules generate outputs from Requirement 1
+
+Upload Requirement 2
+
+✓ Requirement Analysis changes
+✓ Test Cases change
+✓ Test Data changes
+✓ Defect Prediction changes
+✓ Report changes
+
+No hardcoded responses should remain.
+
+The application should behave like a real AI Test Engineer Agent powered by Gemini.
