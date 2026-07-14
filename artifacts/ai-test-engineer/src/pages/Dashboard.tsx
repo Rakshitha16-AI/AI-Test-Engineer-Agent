@@ -1,76 +1,62 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
+import { useLocation } from "wouter";
 import {
-  Upload,
-  Brain,
-  ListChecks,
-  Database,
-  AlertTriangle,
-  GitMerge,
-  FileText,
-  CheckCircle2,
-  FileCheck,
-  HardDrive,
-  Zap,
+  Upload, Brain, ListChecks, Database, AlertTriangle,
+  GitMerge, FileText, CheckCircle2, FileCheck, HardDrive,
+  ArrowRight,
 } from "lucide-react";
-import AIOutputPanel from "@/components/AIOutputPanel";
-import DuplicateDetector from "@/components/DuplicateDetector";
+import { useDocument } from "@/context/DocumentContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const ACTION_BUTTONS = [
+const NAV_CARDS = [
   {
     id: "analyze",
-    label: "Analyze Requirement",
+    label: "Requirement Analysis",
+    desc: "Extract actors, functional requirements, business rules, and risks",
     icon: Brain,
-    colorClass:
-      "text-[#00d4aa] border-[#00d4aa]/30 bg-[#00d4aa]/5 hover:bg-[#00d4aa]/10 hover:border-[#00d4aa]/60 hover:shadow-[0_0_24px_rgba(0,212,170,0.25)]",
-    iconBg: "bg-[#00d4aa]/15",
-    action: "analyze",
+    color: "#00d4aa",
+    path: "/analysis",
   },
   {
     id: "testcases",
-    label: "Generate Test Cases",
+    label: "Test Case Generator",
+    desc: "Generate positive, negative, boundary, and edge case test cases",
     icon: ListChecks,
-    colorClass:
-      "text-[#a855f7] border-[#a855f7]/30 bg-[#a855f7]/5 hover:bg-[#a855f7]/10 hover:border-[#a855f7]/60 hover:shadow-[0_0_24px_rgba(168,85,247,0.25)]",
-    iconBg: "bg-[#a855f7]/15",
-    action: "testcases",
+    color: "#a855f7",
+    path: "/test-cases",
   },
   {
     id: "testdata",
-    label: "Generate Test Data",
+    label: "Test Data Generator",
+    desc: "Generate valid, invalid, and boundary value test datasets",
     icon: Database,
-    colorClass:
-      "text-[#3b82f6] border-[#3b82f6]/30 bg-[#3b82f6]/5 hover:bg-[#3b82f6]/10 hover:border-[#3b82f6]/60 hover:shadow-[0_0_24px_rgba(59,130,246,0.25)]",
-    iconBg: "bg-[#3b82f6]/15",
-    action: "testdata",
+    color: "#3b82f6",
+    path: "/test-data",
   },
   {
     id: "predict",
-    label: "Predict Defects",
+    label: "Defect Prediction",
+    desc: "Predict high-risk modules and probable defects before testing",
     icon: AlertTriangle,
-    colorClass:
-      "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/5 hover:bg-[#f59e0b]/10 hover:border-[#f59e0b]/60 hover:shadow-[0_0_24px_rgba(245,158,11,0.25)]",
-    iconBg: "bg-[#f59e0b]/15",
-    action: "predict",
+    color: "#f59e0b",
+    path: "/prediction",
   },
   {
     id: "duplicates",
-    label: "Find Duplicate Defects",
+    label: "Duplicate Detection",
+    desc: "Find duplicate defects using Jaccard similarity analysis",
     icon: GitMerge,
-    colorClass:
-      "text-[#ec4899] border-[#ec4899]/30 bg-[#ec4899]/5 hover:bg-[#ec4899]/10 hover:border-[#ec4899]/60 hover:shadow-[0_0_24px_rgba(236,72,153,0.25)]",
-    iconBg: "bg-[#ec4899]/15",
-    action: "duplicates",
+    color: "#ec4899",
+    path: "/duplicates",
   },
   {
     id: "report",
-    label: "Generate Report",
+    label: "Test Report",
+    desc: "Generate AI-powered coverage metrics and quality reports",
     icon: FileText,
-    colorClass:
-      "text-[#10b981] border-[#10b981]/30 bg-[#10b981]/5 hover:bg-[#10b981]/10 hover:border-[#10b981]/60 hover:shadow-[0_0_24px_rgba(16,185,129,0.25)]",
-    iconBg: "bg-[#10b981]/15",
-    action: "report",
+    color: "#10b981",
+    path: "/report",
   },
 ];
 
@@ -81,163 +67,118 @@ function formatBytes(bytes: number): string {
 }
 
 export default function Dashboard() {
-  const [file, setFile] = useState<File | null>(null);
-  const [currentAction, setCurrentAction] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const { fileName, hasDocument, setDocument } = useDocument();
+  const [, navigate] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (selected: File) => {
-    setFile(selected);
-    setCurrentAction(null);
-    toast.success("Document uploaded successfully", {
-      description: `${selected.name} is ready for analysis.`,
-      duration: 3000,
-    });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFileSelect(e.target.files[0]);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) handleFileSelect(dropped);
-  };
-
-  const triggerAction = (actionId: string) => {
-    // Duplicate detector has its own file upload — no requirement doc needed
-    if (actionId === "duplicates") {
-      setCurrentAction("duplicates");
-      return;
-    }
-    if (!file) {
-      setCurrentAction("no_file");
-      toast.error("No document uploaded", {
-        description: "Please upload a requirements document first.",
-        duration: 3000,
+  const handleFile = async (f: File) => {
+    try {
+      const text = await f.text();
+      setDocument(f.name, text);
+      toast.success("Document uploaded", {
+        description: `${f.name} is ready for analysis on all pages.`,
       });
-      return;
+    } catch {
+      toast.error("Failed to read file. Try a .txt file or paste text in Requirement Analysis.");
     }
-    setCurrentAction(null);
-    setTimeout(() => setCurrentAction(actionId), 50);
   };
 
   return (
     <div className="h-full flex flex-col max-w-6xl mx-auto p-4 md:p-6 gap-5">
 
-      {/* Upload Area */}
+      {/* Upload Zone */}
       <div
         className={cn(
-          "relative rounded-xl border transition-all duration-300 cursor-pointer",
-          isDragging
-            ? "border-[#00d4aa] bg-[#00d4aa]/10 shadow-[0_0_32px_rgba(0,212,170,0.2)]"
-            : file
+          "rounded-xl border transition-all duration-300 cursor-pointer",
+          hasDocument
             ? "border-emerald-500/40 bg-emerald-500/5"
-            : "border-white/10 bg-[#0d1326] hover:border-white/20 hover:bg-[#0d1326]"
+            : "border-white/10 bg-[#0d1326] hover:border-white/20"
         )}
         onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-        data-testid="upload-zone"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const f = e.dataTransfer.files[0];
+          if (f) void handleFile(f);
+        }}
       >
         <input
           ref={inputRef}
           type="file"
           className="hidden"
-          onChange={handleFileChange}
-          accept=".pdf,.doc,.docx,.txt"
-          data-testid="input-file-upload"
+          accept=".txt,.md,.pdf,.doc,.docx"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void handleFile(f);
+            e.target.value = "";
+          }}
         />
 
-        {file ? (
-          /* File uploaded state */
+        {hasDocument ? (
           <div className="p-5 flex items-center gap-5">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center border border-emerald-500/30 shrink-0">
               <FileCheck className="w-6 h-6 text-emerald-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm truncate mb-1">{file.name}</p>
-              <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1.5 text-white/50">
-                  <HardDrive className="w-3 h-3" />
-                  {formatBytes(file.size)}
-                </span>
-                <span className="flex items-center gap-1.5 text-white/50">
-                  <FileText className="w-3 h-3" />
-                  {file.name.split(".").pop()?.toUpperCase() ?? "FILE"}
-                </span>
-              </div>
+              <p className="text-white font-semibold text-sm truncate mb-1">{fileName}</p>
+              <p className="text-xs text-white/40">Active on all pages — click to replace</p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-xs font-semibold text-emerald-400">Ready for Analysis</span>
             </div>
-            <p className="text-xs text-white/30 shrink-0 hidden md:block">Click to replace</p>
           </div>
         ) : (
-          /* Empty upload state */
           <div className="p-8 flex flex-col items-center justify-center text-center">
-            <div className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center mb-4 border transition-all duration-300",
-              isDragging
-                ? "bg-[#00d4aa]/20 border-[#00d4aa]/60 scale-110"
-                : "bg-[#00d4aa]/10 border-[#00d4aa]/30"
-            )}>
+            <div className="w-14 h-14 rounded-full bg-[#00d4aa]/10 border border-[#00d4aa]/30 flex items-center justify-center mb-4">
               <Upload className="w-7 h-7 text-[#00d4aa]" />
             </div>
             <h3 className="text-base font-semibold text-white mb-1">Upload Requirement Document</h3>
-            <p className="text-white/40 text-sm">Drag & drop or click to browse — PDF, DOCX, TXT supported</p>
+            <p className="text-white/40 text-sm">Drag & drop or click — TXT, PDF, DOCX supported</p>
+            <p className="text-white/25 text-xs mt-1">All modules below will use this document</p>
           </div>
         )}
       </div>
 
-      {/* Action Buttons Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {ACTION_BUTTONS.map((btn) => {
-          const Icon = btn.icon;
+      {/* Navigation Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 flex-1">
+        {NAV_CARDS.map((card) => {
+          const Icon = card.icon;
           return (
             <button
-              key={btn.id}
-              onClick={() => triggerAction(btn.action)}
-              data-testid={`button-${btn.id}`}
-              className={cn(
-                "flex flex-col items-center justify-center gap-3 p-4 rounded-xl border transition-all duration-300 active:scale-[0.97]",
-                btn.colorClass
-              )}
+              key={card.id}
+              onClick={() => navigate(card.path)}
+              className="group flex flex-col gap-3 p-4 rounded-xl border border-white/10 bg-[#0d1326] hover:border-white/20 hover:bg-[#0d1326] text-left transition-all duration-200 active:scale-[0.98]"
+              style={{
+                ["--card-color" as string]: card.color,
+              }}
             >
-              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", btn.iconBg)}>
-                <Icon className="w-5 h-5" />
+              <div className="flex items-start justify-between">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: `${card.color}18`, border: `1px solid ${card.color}40` }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: card.color }} />
+                </div>
+                <ArrowRight
+                  className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors mt-0.5"
+                />
               </div>
-              <span className="font-medium text-sm text-center leading-tight">{btn.label}</span>
+              <div>
+                <p className="text-sm font-semibold text-white mb-1">{card.label}</p>
+                <p className="text-xs text-white/35 leading-relaxed">{card.desc}</p>
+              </div>
+              {hasDocument && (
+                <div
+                  className="text-[11px] font-medium px-2 py-0.5 rounded-full w-fit"
+                  style={{ color: card.color, background: `${card.color}15`, border: `1px solid ${card.color}30` }}
+                >
+                  Document Ready
+                </div>
+              )}
             </button>
           );
         })}
-      </div>
-
-      {/* Output Area — Duplicate Detector OR AI Output Panel */}
-      <div className="flex-1 min-h-[380px] flex flex-col relative">
-        {currentAction === "duplicates" ? (
-          <DuplicateDetector />
-        ) : (
-          <>
-            {!file && !currentAction && (
-              <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-                <Zap className="w-3 h-3 text-yellow-400" />
-                <span className="text-xs text-yellow-400 font-medium">Upload a document to begin</span>
-              </div>
-            )}
-            <AIOutputPanel
-              action={currentAction}
-              fileName={file?.name ?? "document.pdf"}
-              onClear={() => setCurrentAction(null)}
-            />
-          </>
-        )}
       </div>
     </div>
   );
